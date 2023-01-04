@@ -4,10 +4,12 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from .models import User
+from .models import User, Listing
 
 
 def index(request):
+    user = User.objects.all()
+    print(user)
     return render(request, "auctions/index.html")
 
 
@@ -28,8 +30,7 @@ def login_view(request):
                 "message": "Invalid username and/or password."
             })
     else:
-        return render(request, "auctions/login.html")
-
+        return render(request, "auctions/login.html")  
 
 def logout_view(request):
     logout(request)
