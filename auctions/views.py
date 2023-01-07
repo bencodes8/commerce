@@ -1,16 +1,36 @@
+from django import forms
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.contrib.auth.decorators import login_required
 
-from .models import User, Listing
+from .models import User, Listing, Genre
 
+class NewListingForm(forms.ModelForm):
+    class Meta: 
+        model = Listing
+        fields = '__all__'
+        exclude = ['owner']
 
 def index(request):
-    user = User.objects.all()
-    print(user)
-    return render(request, "auctions/index.html")
+    listings = Listing.objects.all()
+    return render(request, "auctions/index.html", {
+        "listings": listings 
+    })
+
+@login_required
+def create(request):
+    if request.method == "POST":
+        form = NewListingForm(request.POST)
+        if form.is_valid():
+            instance = form.save(commit=False)
+            instance.owner = request.user
+            instance.save()
+    return render(request, "auctions/create.html", {
+        "form": NewListingForm()
+    })
 
 
 def login_view(request):
@@ -32,6 +52,7 @@ def login_view(request):
     else:
         return render(request, "auctions/login.html")  
 
+@login_required
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("index"))
@@ -62,3 +83,10 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "auctions/register.html")
+
+def listing(request, listing_id):
+    listing = Listing.objects.get(pk=listing_id)
+    print(listing)
+    return render(request, "auctions/listing.html", {
+        "listing": listing
+    })
