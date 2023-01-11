@@ -13,7 +13,14 @@ class NewListingForm(forms.ModelForm):
         model = Listing
         fields = '__all__'
         exclude = ['owner']
-
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.TextInput(attrs={'class': 'form-control'}),
+            'starting_bid': forms.NumberInput(attrs={'class': 'form-control'}),
+            'image': forms.FileInput(attrs={'class': 'form-control'}),
+            'genre': forms.SelectMultiple(attrs={'class': 'form-control'})  
+        }
+        
 def index(request):
     listings = Listing.objects.all()
     return render(request, "auctions/index.html", {
