@@ -35,6 +35,10 @@ def create(request):
             instance = form.save(commit=False)
             instance.owner = request.user
             instance.save()
+        else:
+            return render(request, "auctions/create.html", {
+                "form": NewListingForm(request.POST)
+            })
     return render(request, "auctions/create.html", {
         "form": NewListingForm()
     })
