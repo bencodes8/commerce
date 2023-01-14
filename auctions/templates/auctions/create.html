@@ -7,19 +7,20 @@
         <form action="{% url 'create' %}" method="post">
                 {% csrf_token %}
                 {% for field in form %}
-                        <label class="form-label"> {{ field.label }} </label>   
-
-                        {% if field == form.starting_bid %}
+                    <label class="form-label"> <b>{{ field.label }} </b> </label> 
+                    {% if field.errors %}
+                    <div class="alert alert-warning" role="alert"> {{ field.errors|striptags }}</div>
+                    {% endif %}
+                    {% if field == form.starting_bid %}
                         <div class="input-group mb-3">
                             <span class="input-group-text">$</span>
                             {{field}}
                         </div>
-
-                        {% else %}
-                        <div class="mb-3">
-                            {{ field }}
-                        </div>
-                        {% endif %}
+                    {% else %}
+                    <div class="mb-3">
+                        {{ field }}
+                    </div>
+                    {% endif %}
                 {% endfor %}
             <input class="btn btn-primary" type="submit" value="List">
         </form>
