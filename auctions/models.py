@@ -22,7 +22,7 @@ class Listing(models.Model):
     starting_bid = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Starting Bid", validators=[MinValueValidator(Decimal('0.01'))])
     image = models.ImageField(upload_to='auctions/media', default=None, blank=True, verbose_name="Image (Optional)")
     date = models.DateTimeField(auto_now_add=True)
-    genre = models.ManyToManyField(Genre, default=None, related_name="genre")
+    genre = models.ManyToManyField(Genre, default=None, related_name="genre", verbose_name="Genre(s)")
     
     def __str__(self):
         return f"Listing ID #{self.listing_id}: {self.title}, {self.date}"
