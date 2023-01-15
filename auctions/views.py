@@ -27,6 +27,15 @@ def index(request):
         "listings": listings 
     })
 
+def listing(request, listing_id):
+    try:
+        listing = Listing.objects.get(pk=listing_id)
+    except:
+        return HttpResponse('Sorry directing you to this listing item lead to an error. Perhaps it was deleted?')
+    return render(request, "auctions/listing.html", {
+        "listing": listing
+    })
+
 @login_required
 def create(request):
     if request.method == "POST":
@@ -35,6 +44,7 @@ def create(request):
             instance = form.save(commit=False)
             instance.owner = request.user
             instance.save()
+            return HttpResponseRedirect(reverse('index'))
         else:
             return render(request, "auctions/create.html", {
                 "form": NewListingForm(request.POST)
@@ -94,10 +104,3 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "auctions/register.html")
-
-def listing(request, listing_id):
-    listing = Listing.objects.get(pk=listing_id)
-    print(listing)
-    return render(request, "auctions/listing.html", {
-        "listing": listing
-    })
