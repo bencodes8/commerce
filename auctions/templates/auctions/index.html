@@ -15,9 +15,12 @@
             <div class="d-flex flex-column mb-2 p-2">
                 <div class="p-2"><b>Game:</b> {{ listing.title }}</div>
                 <div class="p-2"><b>Price:</b> ${{ listing.starting_bid }}</div>
-                <div class="p-2"> <b>Description:</b> {{ listing.description }}</div>
-                <div class="p-2"> <b>Genre(s):</b> {{ listing.genre }}</div>
-                <div class="p-2"><a href="{% url 'listing' listing.listing_id %}">Click For More Information</a></div>
+                <div class="p-2"> <b>Genre(s):</b> 
+                {% for genre in listing.genres.all %}
+                    <i>{{ genre }}</i>,
+                {% endfor %}
+                </div>  
+                <div class="p-2"><a href="{% url 'listing' listing.listing_id %}">Information about Listing</a></div>
             </div>
         </div>
         <hr>
