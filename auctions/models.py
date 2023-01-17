@@ -5,6 +5,8 @@ from django.core.validators import MinValueValidator
 from decimal import Decimal
 
 class User(AbstractUser):
+    watchlist = models.ManyToManyField('Listing', blank=True, null=True)
+    
     def __str__(self):
         return f"{self.username}"
 
@@ -13,6 +15,7 @@ class Genre(models.Model):
     
     def __str__(self):
         return f"{self.name}"
+    
 
 class Listing(models.Model):
     listing_id = models.AutoField(primary_key=True)
@@ -22,10 +25,10 @@ class Listing(models.Model):
     starting_bid = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Starting Bid", validators=[MinValueValidator(Decimal('0.01'))])
     image = models.ImageField(upload_to='auctions/media', default=None, blank=True, verbose_name="Image (Optional)")
     date = models.DateTimeField(auto_now_add=True)
-    genre = models.ManyToManyField(Genre, default=None, related_name="genre", verbose_name="Genre(s)")
+    genres = models.ManyToManyField(Genre, verbose_name="Genre(s)")
     
     def __str__(self):
-        return f"Listing ID #{self.listing_id}: {self.title}, {self.date}"
+        return f"Listing ID: {self.listing_id} - {self.title}"
 
 class Bid(models.Model):
     pass
