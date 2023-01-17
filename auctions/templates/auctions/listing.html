@@ -18,8 +18,16 @@
         <div class="p-2"><b>Price:</b> ${{ listing.starting_bid }}</div>
         <div class="p-2"> <b>Description:</b> {{ listing.description }}</div>
         <div class="p-2"> <b>Listed on:</b> {{ listing.date }}</div>
-        <div class="p-2"> <b>Genre(s):</b> {{ listing.genre }}</div>
+        <div class="p-2"> <b>Genre(s):</b> 
+        {% for genre in listing.genres.all %}
+            {{ genre }}
+        {% endfor %}
+        </div>
         <div class="p-2"> <b>Listed by:</b> {{ listing.owner }}</div>
+        <form action="{% url 'watchlist' %}" method="post">
+            {% csrf_token %}
+            <div class="p-2"><input class="btn btn-primary" type="submit" value="Add to Watchlist"></div>
+        </form>
     </div>
 </div>
 {% endblock %}
