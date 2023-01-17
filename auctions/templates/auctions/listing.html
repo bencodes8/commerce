@@ -24,10 +24,11 @@
         {% endfor %}
         </div>
         <div class="p-2"> <b>Listed by:</b> {{ listing.owner }}</div>
-        <form action="{% url 'watchlist' %}" method="post">
+        <form action="{% url 'listing' listing.listing_id %}" method="post">
             {% csrf_token %}
+            {{ watchform }}
             <div class="p-2"><input class="btn btn-primary" type="submit" value="Add to Watchlist"></div>
         </form>
     </div>
-</div>
+</div>  
 {% endblock %}

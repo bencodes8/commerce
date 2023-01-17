@@ -1,7 +1,36 @@
-{% include "auctions/index.html" %}
+{% extends "auctions/layout.html" %}
 
-<title> Watchlist </title>
+{%block title %} Watchlist {% endblock%}
 
 {% block body %}
-
+    <h3>Watchlist</h3>
+    {% if watchlist|length > 0 %}
+        {% if message %}
+            <div> {{ message }} </div>
+        {% endif %}
+    {% for item in watchlist %}
+        <div class="d-flex p-2">
+        <div id="img-div" class="d-flex justify-content-center align-items-center flex-column mb-2 p-2">
+            {% if item.image %}
+            <img src="{{ item.image.url }}">
+            {% else %}
+            No image exists
+            {% endif %}
+        </div>
+        <div class="d-flex flex-column mb-2 p-2">
+            <div class="p-2"><b>Game:</b> {{ item.title }}</div>
+            <div class="p-2"><b>Price:</b> ${{ item.starting_bid }}</div>
+            <div class="p-2"> <b>Genre(s):</b> 
+            {% for genre in item.genres.all %}
+                <i>{{ genre }}</i>,
+            {% endfor %}
+            </div>  
+            <div class="p-2"><a href="{% url 'listing' item.listing_id %}">Information about Listing</a></div>
+        </div>
+    </div>
+    <hr>
+    {% endfor %}
+{% else %}
+    <h3>No Listings On Your Watchlist</h3>
+{% endif %}
 {% endblock %}

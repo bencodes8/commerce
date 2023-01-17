@@ -6,7 +6,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 
-from .models import User, Listing, Genre
+from .models import User, Listing
 
 class NewListingForm(forms.ModelForm):
     class Meta: 
@@ -20,7 +20,7 @@ class NewListingForm(forms.ModelForm):
             'image': forms.FileInput(attrs={'class': 'form-control'}),
             'genres': forms.SelectMultiple(attrs={'class': 'form-select form-select-sm'})  
         }
-        
+
 def index(request):
     listings = Listing.objects.all()
     return render(request, "auctions/index.html", {
@@ -31,16 +31,26 @@ def listing(request, listing_id):
     try:
         listing = Listing.objects.get(pk=listing_id)
     except:
-        return HttpResponse('Sorry directing you to this listing item lead to an error. Perhaps it was deleted?')
+        return HttpResponse('Sorry, directing you to this listing item lead to an error. Perhaps it was deleted?')
+    
+    if request.method == "POST":
+        watcher = User.objects.get(pk=request.user.id)
+        item = Listing.objects.get(pk=listing_id)
+        watcher.watchlist.add(item)
+        watcher.save()
+        return HttpResponseRedirect(reverse('watchlist'))
+    
     return render(request, "auctions/listing.html", {
         "listing": listing
     })
 
 @login_required
 def watchlist(request):
-    if request.method == "POST":
-        print('okay')
-    return render(request, "auctions/watchlist.html")
+    user = User.objects.get(pk=request.user.id)
+    watchlist = user.watchlist.all()
+    return render(request, "auctions/watchlist.html", {
+        "watchlist": watchlist
+    })
 
 @login_required
 def create(request):
@@ -49,7 +59,8 @@ def create(request):
         if form.is_valid():
             instance = form.save(commit=False)
             instance.owner = request.user
-            instance.save()
+            instance.save() 
+            print(request.POST)
             return HttpResponseRedirect(reverse('index'))
         else:
             return render(request, "auctions/create.html", {
