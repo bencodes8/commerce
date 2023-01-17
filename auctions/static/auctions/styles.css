@@ -3,13 +3,13 @@ body {
 }
 
 @media (min-width: 750px) {
-    .form-control, .input-group, .alert {
+    .form-control, .input-group, .alert, .form-select-sm {
         width: 600px;
     }
 }
 
 @media (max-width: 749px) {
-    .form-control, .input-group, .alert {
+    .form-control, .input-group, .alert, .form-select-sm {
         width: 80%;
     }
 }
