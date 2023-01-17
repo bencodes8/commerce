@@ -18,7 +18,7 @@ class NewListingForm(forms.ModelForm):
             'description': forms.TextInput(attrs={'class': 'form-control'}),
             'starting_bid': forms.NumberInput(attrs={'class': 'form-control'}),
             'image': forms.FileInput(attrs={'class': 'form-control'}),
-            'genre': forms.SelectMultiple(attrs={'class': 'form-control'})  
+            'genres': forms.SelectMultiple(attrs={'class': 'form-select form-select-sm'})  
         }
         
 def index(request):
@@ -35,6 +35,12 @@ def listing(request, listing_id):
     return render(request, "auctions/listing.html", {
         "listing": listing
     })
+
+@login_required
+def watchlist(request):
+    if request.method == "POST":
+        print('okay')
+    return render(request, "auctions/watchlist.html")
 
 @login_required
 def create(request):
