@@ -27,7 +27,10 @@
         <form action="{% url 'listing' listing.listing_id %}" method="post">
             {% csrf_token %}
             {{ watchform }}
-            <div class="p-2"><input class="btn btn-primary" type="submit" value="Add to Watchlist"></div>
+            <div class="p-2">
+                <input class="btn btn-primary" type="submit" value="Add to Watchlist">
+                <a href="{% url 'bid' listing.listing_id%}" class="btn btn-primary">Bid for Item</a>
+            </div>
         </form>
     </div>
 </div>  
