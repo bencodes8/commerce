@@ -1,10 +1,10 @@
-from django import forms
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
 from django.shortcuts import render
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 from .models import User, Listing, Genre, Bid
 from .forms import NewListingForm, BidForm
@@ -12,8 +12,10 @@ from .forms import NewListingForm, BidForm
 # index page
 def index(request):
     listings = Listing.objects.all()
+
     return render(request, "auctions/index.html", {
-        "listings": listings 
+        "title": "Auctions",
+        "listings": listings
     })
 
 # create listing page
@@ -23,6 +25,9 @@ def create(request):
         form = NewListingForm(request.POST)
         
         if form.is_valid():
+            
+            messages.success(request, 'Successfully added listing.')
+            
             genres = request.POST.getlist('genres')
             
             instance = form.save(commit=False)
@@ -52,30 +57,47 @@ def listing(request, listing_id):
         return HttpResponseNotFound('Sorry, directing you to this listing item lead to an error. Perhaps it was deleted?')
     # adds item to watchlist
     if request.method == "POST":
+        
         user = User.objects.get(pk=request.user.id)
         item = Listing.objects.get(pk=listing_id)
+        
         if not User.objects.filter(watchlist=item).exists():
-            user.watchlist.add(item)
-            user.save()
-            return HttpResponseRedirect(reverse('watchlist'))
+                user.watchlist.add(item)
+                user.save()
+                messages.success(request, 'Successfully added listing to watchlist')
+                return HttpResponseRedirect(reverse('watchlist'))
         else:
-            print('no')
+            messages.error(request, 'Listing already exists on watchlist')
 
-    
     return render(request, "auctions/listing.html", {
+        "title": "Listing",
         "listing": listing
     })
 
 # bidding page
 @login_required
 def bid(request, listing_id):
-    bid_form = BidForm()
     item = Listing.objects.get(pk=listing_id)
-    if request.method == "POST":
-        pass
     
+    if request.method == "POST":
+        bid_form = BidForm(request.POST)
+        if bid_form.is_valid():
+            instance = bid_form.save(commit=False)
+            bid_price = float(request.POST['bid'])
+            if bid_price >= item.listing_id:
+                instance.bidder = request.user
+                instance.listing = item
+                instance.bid = bid_price
+                instance.save()
+        else:
+            messages.error(request, 'Bid placed is not higher than current placed bids or starting bid. Try again.')
+            return render(request, "auctions/bid.html", {
+                "bid_form": BidForm(request.POST),
+                "item": item
+            })
+            
     return render(request, "auctions/bid.html", {
-        "bid_form": bid_form,
+        "bid_form": BidForm(),
         "item": item
     })
 
@@ -93,7 +115,7 @@ def watchlist(request):
             print('no')
             
     return render(request, "auctions/watchlist.html", {
-        "watchlist": watchlist,
+        "watchlist": watchlist
     })
 
 def login_view(request):
@@ -118,6 +140,7 @@ def login_view(request):
 @login_required
 def logout_view(request):
     logout(request)
+    messages.success('Successfully logged out.')
     return HttpResponseRedirect(reverse("index"))
 
 
