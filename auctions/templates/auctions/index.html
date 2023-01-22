@@ -14,10 +14,10 @@
             </div>
             <div class="d-flex flex-column mb-2 p-2">
                 <div class="p-2"><b>Game:</b> {{ listing.title }}</div>
-                <div class="p-2"><b>Price:</b> ${{ listing.starting_bid }}</div>
+                <div class="p-2"><b>Starting Bid:</b> ${{ listing.starting_bid }}</div>
                 <div class="p-2"> <b>Genre(s):</b> 
                 {% for genre in listing.genres.all %}
-                    <i>{{ genre }}</i>,
+                    <i>{{ genre }}</i>,&nbsp
                 {% endfor %}
                 </div>  
                 <div class="p-2"><a href="{% url 'listing' listing.listing_id %}">Information about Listing</a></div>

@@ -15,12 +15,14 @@
     </div>
     <div class="d-flex flex-column mb-2 p-2">
         <div class="p-2"><b>Game:</b> {{ listing.title }}</div>
-        <div class="p-2"><b>Price:</b> ${{ listing.starting_bid }}</div>
+        <div class="p-2"><b>Starting Bid:</b> ${{ listing.starting_bid }}</div>
         <div class="p-2"> <b>Description:</b> {{ listing.description }}</div>
         <div class="p-2"> <b>Listed on:</b> {{ listing.date }}</div>
         <div class="p-2"> <b>Genre(s):</b> 
         {% for genre in listing.genres.all %}
-            {{ genre }}
+
+                {{ genre }}&nbsp
+
         {% endfor %}
         </div>
         <div class="p-2"> <b>Listed by:</b> {{ listing.owner }}</div>

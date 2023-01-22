@@ -1,25 +1,13 @@
 from django import forms
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
 from django.shortcuts import render
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 
-from .models import User, Listing, Genre
-
-class NewListingForm(forms.ModelForm):
-    class Meta: 
-        model = Listing
-        fields = ['title', 'description', 'starting_bid', 'image', 'genres']
-        widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control'}),
-            'description': forms.TextInput(attrs={'class': 'form-control'}),
-            'starting_bid': forms.NumberInput(attrs={'class': 'form-control'}),
-            'image': forms.FileInput(attrs={'class': 'form-control'}),
-            'genres': forms.SelectMultiple(attrs={'class': 'form-select form-select-sm',
-                                                  'required': True})  
-        }
+from .models import User, Listing, Genre, Bid
+from .forms import NewListingForm, BidForm
 
 # index page
 def index(request):
@@ -61,14 +49,18 @@ def listing(request, listing_id):
     try:
         listing = Listing.objects.get(pk=listing_id)
     except:
-        return HttpResponse('Sorry, directing you to this listing item lead to an error. Perhaps it was deleted?')
+        return HttpResponseNotFound('Sorry, directing you to this listing item lead to an error. Perhaps it was deleted?')
     # adds item to watchlist
     if request.method == "POST":
-        watcher = User.objects.get(pk=request.user.id)
+        user = User.objects.get(pk=request.user.id)
         item = Listing.objects.get(pk=listing_id)
-        watcher.watchlist.add(item)
-        watcher.save()
-        return HttpResponseRedirect(reverse('watchlist'))
+        if not User.objects.filter(watchlist=item).exists():
+            user.watchlist.add(item)
+            user.save()
+            return HttpResponseRedirect(reverse('watchlist'))
+        else:
+            print('no')
+
     
     return render(request, "auctions/listing.html", {
         "listing": listing
@@ -77,18 +69,31 @@ def listing(request, listing_id):
 # bidding page
 @login_required
 def bid(request, listing_id):
+    bid_form = BidForm()
+    item = Listing.objects.get(pk=listing_id)
     if request.method == "POST":
         pass
     
-    return render(request, "auctions/bid.html")
+    return render(request, "auctions/bid.html", {
+        "bid_form": bid_form,
+        "item": item
+    })
 
 # watchlist page
 @login_required
 def watchlist(request):
     user = User.objects.get(pk=request.user.id)
     watchlist = user.watchlist.all()
+    
+    if request.method == "POST":
+        item_id = request.POST.get('listing_id')
+        try:
+            user.watchlist.remove(item_id)
+        except:
+            print('no')
+            
     return render(request, "auctions/watchlist.html", {
-        "watchlist": watchlist
+        "watchlist": watchlist,
     })
 
 def login_view(request):
