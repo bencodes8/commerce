@@ -38,7 +38,7 @@ class Bid(models.Model):
     bid = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Bid Amount", validators=[MinValueValidator(Decimal('0.01'))], default=0.01)
     
     def __str__(self):
-        return f"User:{self.bidder} bids ${self.bid}"
+        return f"{self.bidder} bids ${self.bid}"
 
 class Comment(models.Model):
     pass
