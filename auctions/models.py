@@ -35,7 +35,7 @@ class Listing(models.Model):
 class Bid(models.Model):
     bidder = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
     listing = models.ForeignKey(Listing, on_delete=models.CASCADE, default=None)
-    bid = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Bid Amount", validators=[MinValueValidator(Decimal('0.01'))], default=0)
+    bid = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Bid Amount", validators=[MinValueValidator(Decimal('0.01'))], default=0.01)
     
     def __str__(self):
         return f"User:{self.bidder} bids ${self.bid}"
