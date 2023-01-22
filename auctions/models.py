@@ -4,12 +4,14 @@ from django.conf import settings
 from django.core.validators import MinValueValidator
 from decimal import Decimal
 
+# user model
 class User(AbstractUser):
     watchlist = models.ManyToManyField('Listing', blank=True, null=True)
     
     def __str__(self):
         return f"{self.username}"
 
+# This model will fall under the 'category' specification
 class Genre(models.Model):
     name = models.CharField(max_length=32, unique=True)
     
@@ -28,10 +30,20 @@ class Listing(models.Model):
     genres = models.ManyToManyField(Genre, verbose_name="Genre(s)")
     
     def __str__(self):
-        return f"Listing ID: {self.listing_id} - {self.title}"
+        return f"Listing ID: {self.listing_id} listed {self.title}"
 
 class Bid(models.Model):
-    pass
+    bidder = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
+    listing = models.ForeignKey(Listing, on_delete=models.CASCADE, default=None)
+    bid = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Bid Amount", validators=[MinValueValidator(Decimal('0.01'))], default=0)
+    
+    def __str__(self):
+        return f"User:{self.bidder} bids ${self.bid}"
 
 class Comment(models.Model):
     pass
+    # commenter = models.ForeignKey(User, on_delete=models.CASCADE)
+    # comment = models.CharField(max_length=255, verbose_name="Comment")
+    
+    # def __str__(self):
+    #     return f"User: {self.commenter} comments {self.comment}"
