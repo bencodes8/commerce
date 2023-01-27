@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 from .models import User, Listing, Genre, Bid
-from .forms import NewListingForm, BidForm
+from .forms import NewListingForm, BidForm, SearchForm
 
 # index page
 def index(request):
@@ -117,6 +117,12 @@ def watchlist(request):
             
     return render(request, "auctions/watchlist.html", {
         "watchlist": watchlist
+    })
+
+def search(request):
+    search_form = SearchForm()
+    return render(request, "auctions/search.html", {
+        'form': search_form
     })
 
 def login_view(request):
