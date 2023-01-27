@@ -25,7 +25,6 @@ def create(request):
         form = NewListingForm(request.POST)
         
         if form.is_valid():
-            
             messages.success(request, 'Successfully added listing.')
             
             genres = request.POST.getlist('genres')
@@ -34,10 +33,10 @@ def create(request):
             instance.owner = request.user
             instance.save()
         
-            created_item = Listing.objects.latest('listing_id')
+            latest_listing = Listing.objects.latest('listing_id')
             
             for genres_id in genres:
-                created_item.genres.add(genres_id)
+                latest_listing.genres.add(genres_id)
 
             return HttpResponseRedirect(reverse('index'))
         
@@ -55,50 +54,41 @@ def listing(request, listing_id):
         listing = Listing.objects.get(pk=listing_id)
     except:
         return HttpResponseNotFound('Sorry, directing you to this listing item lead to an error. Perhaps it was deleted?')
-    # adds item to watchlist
+    
+    # bid logic
     if request.method == "POST":
         
-        user = User.objects.get(pk=request.user.id)
-        item = Listing.objects.get(pk=listing_id)
+        if 'bid_amount' in request.POST:
+            bid_form = BidForm(request.POST)
+            if bid_form.is_valid():
+                instance = bid_form.save(commit=False)
+                bid_price = float(request.POST['bid'])
+                if bid_price >= listing.starting_bid:
+                    instance.bidder = request.user
+                    instance.listing = listing
+                    instance.bid = bid_price
+                    instance.save()
+                    messages.success(request, f'Successfully bidded ${bid_price} for this listing!')
+                else:
+                    messages.error(request, f'Unsuccessful! Bid placed of ${bid_price} is not higher than current highest bid or starting bid.')
         
-        if not User.objects.filter(watchlist=item).exists():
-                user.watchlist.add(item)
-                user.save()
-                messages.success(request, 'Successfully added listing to watchlist')
-                return HttpResponseRedirect(reverse('watchlist'))
-        else:
-            messages.error(request, 'Listing already exists on watchlist')
+        # add listing to watchlist
+        elif 'add_to_watchlist' in request.POST:
+            item = Listing.objects.get(pk=listing_id)
+            user = User.objects.get(pk=request.user.id)
+            
+            if not User.objects.filter(watchlist=item).exists():
+                    user.watchlist.add(item)
+                    user.save()
+                    messages.success(request, 'Successfully added listing to watchlist')
+                    return HttpResponseRedirect(reverse('watchlist'))
+            else:
+                messages.error(request, 'Listing already exists on watchlist')
 
     return render(request, "auctions/listing.html", {
         "title": "Listing",
-        "listing": listing
-    })
-
-# bidding page
-@login_required
-def bid(request, listing_id):
-    item = Listing.objects.get(pk=listing_id)
-    
-    if request.method == "POST":
-        bid_form = BidForm(request.POST)
-        if bid_form.is_valid():
-            instance = bid_form.save(commit=False)
-            bid_price = float(request.POST['bid'])
-            if bid_price >= item.listing_id:
-                instance.bidder = request.user
-                instance.listing = item
-                instance.bid = bid_price
-                instance.save()
-        else:
-            messages.error(request, 'Bid placed is not higher than current placed bids or starting bid. Try again.')
-            return render(request, "auctions/bid.html", {
-                "bid_form": BidForm(request.POST),
-                "item": item
-            })
-            
-    return render(request, "auctions/bid.html", {
+        "listing": listing,
         "bid_form": BidForm(),
-        "item": item
     })
 
 # watchlist page
@@ -108,11 +98,13 @@ def watchlist(request):
     watchlist = user.watchlist.all()
     
     if request.method == "POST":
-        item_id = request.POST.get('listing_id')
+        item_id = request.POST['listing_id']
         try:
             user.watchlist.remove(item_id)
         except:
-            print('no')
+            messages.error(request, 'Unable to remove from Watchlist')
+        
+        messages.success(request, 'Successfully removed item from Watchlist')
             
     return render(request, "auctions/watchlist.html", {
         "watchlist": watchlist
@@ -140,7 +132,7 @@ def login_view(request):
 @login_required
 def logout_view(request):
     logout(request)
-    messages.success('Successfully logged out.')
+    messages.success(request, 'Successfully logged out.')
     return HttpResponseRedirect(reverse("index"))
 
 
