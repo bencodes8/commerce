@@ -14,7 +14,6 @@ def index(request):
     listings = Listing.objects.all()
 
     return render(request, "auctions/index.html", {
-        "title": "Auctions",
         "listings": listings
     })
 
@@ -61,16 +60,27 @@ def listing(request, listing_id):
         if 'bid_amount' in request.POST:
             bid_form = BidForm(request.POST)
             if bid_form.is_valid():
-                instance = bid_form.save(commit=False)
+                # keep track of user's bid
                 bid_price = float(request.POST['bid'])
-                if bid_price >= listing.starting_bid:
+                # check to see if the user has already submitted a bid for this listing
+                if not Bid.objects.filter(bidder=request.user.id).exists() and bid_price >= listing.starting_bid:
+                    instance = bid_form.save(commit=False)
                     instance.bidder = request.user
                     instance.listing = listing
                     instance.bid = bid_price
                     instance.save()
-                    messages.success(request, f'Successfully bidded ${bid_price} for this listing!')
+                    messages.success(request, f'Successfully bidded ${bid_price:.2f} for this listing!')
                 else:
-                    messages.error(request, f'Unsuccessful! Bid placed of ${bid_price} is not higher than current highest bid or starting bid.')
+                    bidder = Bid.objects.get(bidder=request.user.id)
+                    bidder_query = Bid.objects.filter(bidder=request.user.id)
+                    
+                    if bid_price < bidder.bid:
+                        messages.error(request, f'Unsuccessful! Bid placed of ${bid_price:.2f} is not higher than current highest bid or starting bid')
+                    elif bid_price == bidder.bid:
+                        messages.error(request, f'Unable to update current bid, you bidded the same amount as your previous of ${bid_price:.2f}')
+                    else:
+                        bidder_query.update(bid=bid_price)
+                        messages.success(request, f'Successfully updated current bid to ${bid_price:.2f}')
         
         # add listing to watchlist
         elif 'add_to_watchlist' in request.POST:
@@ -121,6 +131,7 @@ def login_view(request):
         # Check if authentication successful
         if user is not None:
             login(request, user)
+            messages.success(request, f'Welcome back {user}!')
             return HttpResponseRedirect(reverse("index"))
         else:
             return render(request, "auctions/login.html", {
