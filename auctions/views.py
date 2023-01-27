@@ -54,9 +54,8 @@ def listing(request, listing_id):
     except:
         return HttpResponseNotFound('Sorry, directing you to this listing item lead to an error. Perhaps it was deleted?')
     
-    # bid logic
     if request.method == "POST":
-        
+        # bid logic
         if 'bid_amount' in request.POST:
             bid_form = BidForm(request.POST)
             if bid_form.is_valid():
