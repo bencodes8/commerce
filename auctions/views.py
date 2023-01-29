@@ -12,7 +12,7 @@ from .forms import NewListingForm, BidForm, SearchForm
 # index page
 def index(request):
     listings = Listing.objects.all()
-
+    print(-10 % 3)
     return render(request, "auctions/index.html", {
         "listings": listings
     })

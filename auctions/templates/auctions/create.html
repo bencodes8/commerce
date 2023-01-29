@@ -3,8 +3,8 @@
 {% block title %} Create Listing {% endblock %}
 
 {% block body %}
-    <h1>Create Listing</h1>
-        <form action="{% url 'create' %}" method="post">
+    <h1 class="m-2">Create Listing</h1>
+        <form class="m-2" action="{% url 'create' %}" method="post">
                 {% csrf_token %}
                     {% for field in form %}
                         {% if field == form.genres %}
