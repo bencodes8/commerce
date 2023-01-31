@@ -12,7 +12,6 @@ from .forms import NewListingForm, BidForm, SearchForm
 # index page
 def index(request):
     listings = Listing.objects.all()
-    print(-10 % 3)
     return render(request, "auctions/index.html", {
         "listings": listings
     })
@@ -52,34 +51,50 @@ def listing(request, listing_id):
     try:
         listing = Listing.objects.get(pk=listing_id)
     except:
-        return HttpResponseNotFound('Sorry, directing you to this listing item lead to an error. Perhaps it was deleted?')
-    
+        messages.error(request, 'Sorry, directing you to this listing item lead to an error. Perhaps it was deleted?')
+
     if request.method == "POST":
         # bid logic
         if 'bid_amount' in request.POST:
             bid_form = BidForm(request.POST)
             if bid_form.is_valid():
                 # keep track of user's bid
-                bid_price = float(request.POST['bid'])
-                # check to see if the user has already submitted a bid for this listing
-                if not Bid.objects.filter(bidder=request.user.id).exists() and bid_price >= listing.starting_bid:
-                    instance = bid_form.save(commit=False)
-                    instance.bidder = request.user
-                    instance.listing = listing
-                    instance.bid = bid_price
-                    instance.save()
-                    messages.success(request, f'Successfully bidded ${bid_price:.2f} for this listing!')
-                else:
-                    bidder = Bid.objects.get(bidder=request.user.id)
-                    bidder_query = Bid.objects.filter(bidder=request.user.id)
+                bid_input = float(request.POST['bid'])
+                
+                # check to see if user's bid is at least higher than starting bid
+                if bid_input >= float(listing.starting_bid):
                     
-                    if bid_price < bidder.bid:
-                        messages.error(request, f'Unsuccessful! Bid placed of ${bid_price:.2f} is not higher than current highest bid or starting bid')
-                    elif bid_price == bidder.bid:
-                        messages.error(request, f'Unable to update current bid, you bidded the same amount as your previous of ${bid_price:.2f}')
+                    # check if the user has already submitted a bid for this listing or if there are no bids placed yet for this listing
+                    if (not Bid.objects.filter(bidder=request.user.id).exists()) or (not Bid.objects.filter(listing=listing_id).exists()):
+                        instance = bid_form.save(commit=False)
+                        instance.bidder = request.user
+                        instance.listing = listing
+                        instance.bid = bid_input
+                        instance.save()
+                        # test this
+                        if listing.highest_bid is None:
+                            listing.highest_bid = Bid.objects.latest('bidder')
+                            listing.save()
+                            
+                        messages.success(request, f'Successfully placed ${bid_input:.2f} for this listing!')
+                        
                     else:
-                        bidder_query.update(bid=bid_price)
-                        messages.success(request, f'Successfully updated current bid to ${bid_price:.2f}')
+                        bidder = Bid.objects.filter(bidder=request.user.id).filter(listing=listing_id)     
+                        
+                        if bid_input < listing.highest_bid.bid:
+                            messages.error(request, f'Unsuccessful! Bid placed of ${bid_input:.2f} is not higher than current highest bid' )
+                        elif bid_input == listing.highest_bid.bid:
+                            messages.error(request, f'Unable to update current bid, you bidded the same amount as your previous of ${bid_input:.2f}')
+                        else:
+                            bidder.update(bid=bid_input)
+                            listing.save()
+                            messages.success(request, f'Successfully updated current bid to ${bid_input:.2f}')
+                            return render(request, "auctions/listing.html", {
+                                "listing": listing,
+                                "bid_form": BidForm() })
+                    
+                else:
+                    messages.error(request, f'Unsuccessful! Bid placed of ${bid_input:.2f} is not equal to or higher than starting bid')   
         
         # add listing to watchlist
         elif 'add_to_watchlist' in request.POST:
@@ -95,7 +110,6 @@ def listing(request, listing_id):
                 messages.error(request, 'Listing already exists on watchlist')
 
     return render(request, "auctions/listing.html", {
-        "title": "Listing",
         "listing": listing,
         "bid_form": BidForm(),
     })
