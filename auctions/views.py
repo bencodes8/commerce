@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-from .models import User, Listing, Bid, Comment
+from .models import User, Listing, Genre, Bid, Comment
 from .forms import NewListingForm, BidForm, SearchForm, CommentForm
 
 # index page
@@ -160,10 +160,27 @@ def watchlist(request):
         "watchlist": watchlist
     })
 
-def search(request):
+# search by category (genres)
+def search(request, slug=None):
+    genres = Genre.objects.all()
+    
+    # check if slug url exists 
+    if not genres.filter(slug=slug).exists() and slug is not None:
+        messages.error(request, 'Sorry this category/genre does not exist in the database. Please select the below options.')
+    else:
+    # match slug to available listings
+        listings = Listing.objects.all()
+        if slug is not None:
+            listings_searched = listings.filter(genres=genres.filter(slug=slug)[0].id)
+            return render(request, "auctions/index.html", {
+                'listings': listings_searched
+            })
+            
     return render(request, "auctions/search.html", {
-        'search_form': SearchForm()
+        'genres': Genre.objects.all()
     })
+    
+    
 
 def login_view(request):
     if request.method == "POST":
