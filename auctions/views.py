@@ -66,50 +66,47 @@ def listing(request, listing_id):
             'comments': Comment.objects.filter(listing=listing_id)
         })   
     else:
+        
         user = User.objects.get(pk=request.user.id)
         
-
         if request.method == "POST":
+            
             # bid logic
             if 'bid_amount' in request.POST:
                 bid_form = BidForm(request.POST)
+                user_bid_input = float(request.POST['bid'])
+                bidder_for_listing = Bid.objects.filter(bidder=request.user.id).filter(listing=listing_id)
                 
-                if bid_form.is_valid():
+                # place first bid
+                if listing.highest_bid is None and user_bid_input >= float(listing.starting_bid):
+                    instance = bid_form.save(commit=False)
+                    instance.bidder = request.user
+                    instance.listing = listing
+                    instance.bid = user_bid_input
+                    instance.save()
                     
-                    # keep track of user's bid
-                    bid_input = float(request.POST['bid'])
-                    
-                    # check to see if user's bid is at least higher than starting bid
-                    if bid_input >= float(listing.starting_bid):
-                        
-                        # check if the user has already submitted a bid for this listing or if there are no bids placed yet for this listing
-                        if (not Bid.objects.filter(bidder=request.user.id).exists()) or (not Bid.objects.filter(listing=listing_id).exists()):
-                            instance = bid_form.save(commit=False)
-                            instance.bidder = request.user
-                            instance.listing = listing
-                            instance.bid = bid_input
-                            instance.save()
-                            # set the latest bid to the most current
-                            if listing.highest_bid is None:
-                                listing.highest_bid = Bid.objects.filter(listing=listing_id).latest('bidder')
-                                listing.save()
-                                
-                            messages.success(request, f'Successfully placed ${bid_input:.2f} for this listing!')
-                            
-                        else:
-                            bidder = Bid.objects.filter(bidder=request.user.id).filter(listing=listing_id)     
-                            
-                            if bid_input < listing.highest_bid.bid:
-                                messages.error(request, f'Unsuccessful! Bid placed of ${bid_input:.2f} is not higher than current highest bid' )
-                            elif bid_input == listing.highest_bid.bid:
-                                messages.error(request, f'Unable to update current bid, the highest bid of ${bid_input:.2f} is the same amount bidded')
-                            else:
-                                bidder.update(bid=bid_input)
-                                listing.save()
-                                messages.success(request, f'Successfully updated current bid to ${bid_input:.2f}')
-                                return HttpResponseRedirect(reverse('listing', args=[listing.listing_id]))
+                    listing.highest_bid = Bid.objects.filter(listing=listing_id).latest('bidder')
+                    listing.save()
+                    messages.success(request, f'Successfully set bid to ${listing.highest_bid.bid:.2f}')
+                
+                # place any higher bidding
+                elif listing.highest_bid is not None and user_bid_input >= listing.highest_bid.bid:
+                    # create new instance for new user
+                    if not bidder_for_listing.exists():
+                        new_bidder = Bid.objects.create(bidder=request.user, listing=listing, bid=user_bid_input)
+                        listing.highest_bid = new_bidder
+                        listing.save()
+                        messages.success(request, f'Hello {new_bidder.bidder}, you have now set the bid to ${listing.highest_bid.bid:.2f}')
+                    # updates previous bid amount
                     else:
-                        messages.error(request, f'Unsuccessful! Bid placed of ${bid_input:.2f} is not equal to or higher than starting bid')   
+                        bidder_for_listing.update(bid=user_bid_input)
+                        listing.highest_bid = bidder_for_listing[0]
+                        listing.save()
+                        messages.success(request, f'Successfully updated bid to ${listing.highest_bid.bid:.2f}')
+
+                # error handling for bad bids
+                else:
+                    messages.error(request, f'Unable to update highest bid. ${user_bid_input:.2f} is not higher than starting bid or current highest bid') 
         
             # add listing to watchlist
             elif 'add_watchlist' in request.POST:
