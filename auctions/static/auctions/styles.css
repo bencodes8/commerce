@@ -10,11 +10,17 @@ body {
     .form-control, .input-group, .alert, .form-select-sm {
         width: 600px;
     }
+    .listing-btn {
+        width: 300px;
+    }    
 }
 
 @media (max-width: 749px) {
     .form-control, .input-group, .alert, .form-select-sm {
         width: 80%;
+    }
+    .listing-btn {
+        width: 50%;
     }
 }
 
@@ -23,4 +29,17 @@ body {
     height: 300px;
     box-shadow: 0 1px 1px rgb(0 0 0 / 10%);
     border: 1px solid #dadce0;
+}
+
+.start-bid {
+    color: green;
+}
+
+.high-bid {
+    color: red;
+}
+
+#search, #search:hover, #search:active {
+    text-decoration: none;
+    color: black;
 }
