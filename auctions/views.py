@@ -158,7 +158,8 @@ def watchlist(request):
     watchlist = user.watchlist.all()
             
     return render(request, "auctions/watchlist.html", {
-        "watchlist": watchlist
+        "listings": watchlist,
+        "title": "Watchlist"
     })
 
 # search by category (genres)
