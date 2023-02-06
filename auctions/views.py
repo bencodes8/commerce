@@ -11,16 +11,18 @@ from .forms import NewListingForm, BidForm, SearchForm, CommentForm
 
 # index page
 def index(request):
-    active_listings = Listing.objects.all()
+    active_listings = Listing.objects.filter(status=True)
     return render(request, "auctions/index.html", {
-        "listings": active_listings
+        "listings": active_listings,
+        "title": 'Active Listings'
     })
 
 # inactive listings page
 def inactive(request):
     inactive_listings = Listing.objects.filter(status=False)
     return render(request, "auctions/inactive.html", {
-        "listings": inactive_listings
+        "listings": inactive_listings,
+        "title": 'Inactive Listings'
     })
 
 # create listing page
@@ -30,7 +32,6 @@ def create(request):
         form = NewListingForm(request.POST)
         
         if form.is_valid():
-            messages.success(request, 'Successfully added listing.')
             
             genres = request.POST.getlist('genres')
             
@@ -42,7 +43,8 @@ def create(request):
             
             for genres_id in genres:
                 latest_listing.genres.add(genres_id)
-
+                
+            messages.success(request, 'Successfully added listing.')
             return HttpResponseRedirect(reverse('index'))
         
         else:
@@ -131,6 +133,7 @@ def listing(request, listing_id):
             elif 'close_listing' in request.POST:
                listing.status = False
                listing.save()
+               messages.success(request, f'Successfully closed listing. {listing.highest_bid.bidder} won the auction.')
         
             # comments
             elif 'comment_send' in request.POST:
@@ -140,6 +143,7 @@ def listing(request, listing_id):
                 
         return render(request, "auctions/listing.html", {
             "listing": listing,
+            "bids": Bid.objects.filter(listing=listing_id),
             "bid_form": BidForm(),
             "comment_form": CommentForm(),
             "user": user,
@@ -174,7 +178,7 @@ def search(request, slug=None):
             })
             
     return render(request, "auctions/search.html", {
-        'genres': Genre.objects.all()
+        'genres': genres
     })
     
     

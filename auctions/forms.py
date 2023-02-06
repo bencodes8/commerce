@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Listing, Bid
+from .models import Listing, Bid, Comment
 
 class NewListingForm(forms.ModelForm):
     class Meta: 
@@ -14,11 +14,30 @@ class NewListingForm(forms.ModelForm):
             'genres': forms.SelectMultiple(attrs={'class': 'form-select form-select-sm',
                                                   'required': True})  
         }
-    
+
+class SearchForm(forms.ModelForm):
+    class Meta:
+        model = Listing
+        fields = ['genres']
+        widgets = {
+            'genres': forms.SelectMultiple(attrs={'class': 'form-select'})
+        }
+        
 class BidForm(forms.ModelForm):
     class Meta:
         model = Bid
         fields = ['bid']
-        widget = {
-            'bid': forms.NumberInput(attrs={'class': 'form-contol'})
+        widgets = {
+            'bid': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Insert Bid Amount Here', 'autofocus': True})
+        }
+
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ['comment']
+        widgets =  {
+            'comment': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Comment'})
+        }
+        labels = {
+            'comment': ''
         }
