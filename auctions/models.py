@@ -31,7 +31,7 @@ class Listing(models.Model):
     description = models.CharField(max_length=255, verbose_name="Description")
     starting_bid = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Starting Bid", validators=[MinValueValidator(Decimal('0.01'))])
     highest_bid = models.ForeignKey('Bid', on_delete=models.CASCADE, default=None, blank=True, null=True, related_name="highest_bid")
-    image = models.ImageField(upload_to='auctions/media', default=None, blank=True, null=True, verbose_name="Image (Optional)")
+    image = models.ImageField(upload_to='media', default=None, blank=True, null=True, verbose_name="Image (Optional)")
     date = models.DateTimeField(auto_now_add=True)
     genres = models.ManyToManyField(Genre, verbose_name="Genre(s)")
     status = models.BooleanField(default=True)
