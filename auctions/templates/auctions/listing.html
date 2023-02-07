@@ -14,9 +14,9 @@
 
 <div class="d-flex p-2">
     <div class="d-flex flex-column mb-2 p-2">
-        <div id="img-div" class="d-flex justify-content-center align-items-center">
+        <div id="img-container" class="d-flex justify-content-center align-items-center">
             {% if listing.image %}
-            <img src="{{ listing.image.url }}">
+            <img class="card-img" src="{{ listing.image.url }}">
             {% else %}
             No image exists
             {% endif %}
@@ -64,18 +64,23 @@
 
 <div class="d-flex p-2">
     <div class="d-flex flex-column mb-2 p-2" style="width:450px;">
-        <div class="p-2"><strong style="font-size:27px;">{{ listing.title }}</strong></div>
-        <hr>
-        <div class="p-2" style="font-size:16px;"> {{ listing.description }} </div>
-        <div class="p-2"> <b>Genre(s):</b> 
+        <div class="p-1">
+            <strong style="font-size:27px;">{{ listing.title }}</strong>
+            {% if listing in watchlist %}
+            <h5><span class="badge bg-secondary">Watchlist</span></h5>
+            {% endif %}
+        </div>
+        <div class="p-1">             
             {% for genre in listing.genres.all %}
                 {% if genre == listing.genres.all.last %}
                     {{ genre }}
                 {% else %}
                     {{ genre }},&nbsp
                 {% endif %}
-            {% endfor %}
+        {% endfor %}
         </div>
+        <hr>
+        <div class="p-2" style="font-size:16px;"> {{ listing.description }} </div>
         <div class="d-flex flex-row mb-3">
             <div class="p-2"><b class="start-bid">Starting Bid:</b> ${{ listing.starting_bid }} </div>
             <div class="p-2"><b class="high-bid">Highest Bid: </b>
@@ -86,10 +91,8 @@
                 {% endif %}
             </div>
         </div>
-        <div class="d-flex flex-row mb-3">
-            <div class="p-2"> <b>Listed by:</b> {{ listing.owner }} </div>
-            <div class="p-2"> <b>Listed on:</b> {{ listing.date }} </div>
-        </div>
+        <div class="p-2"> <span style="color: #666666;">Listed by:</span> {{ listing.owner }} </div>
+        <div class="p-2"> <span style="color: #666666;">Listed on:</span> {{ listing.date }} </div>
     </div>
 </div>
 
