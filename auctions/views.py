@@ -29,15 +29,14 @@ def inactive(request):
 @login_required
 def create(request):
     if request.method == "POST":
-        form = NewListingForm(request.POST)
+        form = NewListingForm(request.POST, request.FILES)
         
         if form.is_valid():
             
             genres = request.POST.getlist('genres')
-            
-            new_listing = Listing.objects.create(owner=request.user, title=request.POST['title'].title(), description=request.POST['description'],
-                                   starting_bid=request.POST['starting_bid'])
-            new_listing.save()
+            instance = form.save(commit=False)
+            instance.owner = request.user
+            instance.save()
         
             latest_listing = Listing.objects.latest('listing_id')
             for genres_id in genres:
