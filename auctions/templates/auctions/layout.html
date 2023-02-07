@@ -10,7 +10,7 @@
     </head>
     <body>
         <h1>Game Auctions</h1>
-        <div>
+        <div class="m-2">
             {% if user.is_authenticated %}
                 Signed in as <strong>{{ user.username }}</strong>.
             {% else %}
@@ -29,7 +29,9 @@
             </li>
             {% if user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'watchlist' %}">Watchlist</a>
+                    <a class="nav-link" href="{% url 'watchlist' %}">
+                        Watchlist 
+                        <span class="badge bg-secondary"> {{ user.watchlist.all|length }}</span></a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'create' %}">Create Listing</a>
