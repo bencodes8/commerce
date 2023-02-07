@@ -4,7 +4,7 @@
 
 {% block body %}
     <h1 class="m-2">Create Listing</h1>
-        <form class="m-2" action="{% url 'create' %}" method="post">
+        <form class="m-2" action="{% url 'create' %}" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                     {% for field in form %}
                         {% if field == form.genres %}
