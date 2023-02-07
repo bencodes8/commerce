@@ -14,14 +14,6 @@ class NewListingForm(forms.ModelForm):
             'genres': forms.SelectMultiple(attrs={'class': 'form-select form-select-sm',
                                                   'required': True})  
         }
-
-class SearchForm(forms.ModelForm):
-    class Meta:
-        model = Listing
-        fields = ['genres']
-        widgets = {
-            'genres': forms.SelectMultiple(attrs={'class': 'form-select'})
-        }
         
 class BidForm(forms.ModelForm):
     class Meta:

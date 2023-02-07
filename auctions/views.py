@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 from .models import User, Listing, Genre, Bid, Comment
-from .forms import NewListingForm, BidForm, SearchForm, CommentForm
+from .forms import NewListingForm, BidForm, CommentForm
 
 # index page
 def index(request):
