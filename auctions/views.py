@@ -35,12 +35,11 @@ def create(request):
             
             genres = request.POST.getlist('genres')
             
-            instance = form.save(commit=False)
-            instance.owner = request.user
-            instance.save()
+            new_listing = Listing.objects.create(owner=request.user, title=request.POST['title'].title(), description=request.POST['description'],
+                                   starting_bid=request.POST['starting_bid'])
+            new_listing.save()
         
             latest_listing = Listing.objects.latest('listing_id')
-            
             for genres_id in genres:
                 latest_listing.genres.add(genres_id)
                 
